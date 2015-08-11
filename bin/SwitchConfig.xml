@@ -1,0 +1,51 @@
+<?xml version="1.0"?>
+
+<atmswitch>
+	
+	<name>My Company</name>
+	<address>PSA Building Alexandra Road,Singapore</address>
+	<version>1.0</version>
+
+	<JDBCDriver>oracle.jdbc.driver.OracleDriver</JDBCDriver>
+	
+	<JDBCURL>jdbc:oracle:thin:@localhost:1521:orcl</JDBCURL>
+	<DBUserID>isscbgw</DBUserID>
+	<DBPassword>isscbgw</DBPassword>
+	<DBInitSize>2</DBInitSize>
+	<DBMaxActive>40</DBMaxActive>	
+	<DBMaxWait> 200 </DBMaxWait>
+	
+	<JDBCURLCB>jdbc:oracle:thin:@localhost:1521:orcl</JDBCURLCB>
+	<DBUserIDCB>cab</DBUserIDCB>
+	<DBPasswordCB>cab</DBPasswordCB>
+	<DBInitSizeCB>2</DBInitSizeCB>
+	<DBMaxActiveCB>40</DBMaxActiveCB>	
+	<DBMaxWaitCB> 200 </DBMaxWaitCB>
+	
+	<SMTPServer>pop.bizmail.yahoo.com</SMTPServer>
+	<SMTPPort>25</SMTPPort>
+	<SMTPUser>satya@transinfo-sg.com</SMTPUser>
+	<SMTPPassword>yahoo321</SMTPPassword>
+	<SMTPFrom>satya@transinfo-sg.com</SMTPFrom>
+	<SMTPTo> satya@transinfo-sg.com</SMTPTo>
+	<MailSubject> Testing </MailSubject>
+	<MailBody> Testing </MailBody>
+	<MailSign> Satya </MailSign>
+	
+	<AdminPort>8001</AdminPort>
+	<SocketTimeout>50</SocketTimeout>
+	<WorkerThreads>10</WorkerThreads>
+	<Debug>true</Debug>
+	<DebugFile>D:\TransInfotech\Logs\CAB\IssuerCorebankGateWay\\debug.txt</DebugFile>
+	<DebugMsgDumpFile>D:\TransInfotech\Logs\CAB\IssuerCorebankGateWay\\debugdumptest.txt</DebugMsgDumpFile>
+	
+	<ISOConfig>D:\\TransInfotech\\CAB_workspace\\IssuerCorebankGateWay\\bin\\parser\\base1_iss.xml</ISOConfig>
+	<ISOIssuerConfig>D:\\TransInfotech\\CAB_workspace\\IssuerCorebankGateWay\\bin\\parser\\base1_cb.xml</ISOIssuerConfig>
+	<MultiSocket>false</MultiSocket>
+	<IssuerIP>192.168.1.50</IssuerIP>
+	<IssuerPort>4000</IssuerPort>
+	<HSMIP>192.168.6.95</HSMIP>
+	<HSMPort>1000</HSMPort>
+	<CUPKeyIndex>6</CUPKeyIndex>
+	<CUPTransKeyIndex>10</CUPTransKeyIndex>
+</atmswitch>

@@ -1,0 +1,100 @@
+<?xml version="1.0"?>
+
+<digester-rules>
+   
+   <!-- this rule creates the top level company object -->
+   <object-create-rule pattern="atmswitch" classname="com.transinfo.tplus.BaseConfig" />
+    
+   <call-method-rule pattern="atmswitch/name" methodname="setName"
+	                paramcount="0" />
+   <call-method-rule pattern="atmswitch/address" methodname="setAddress"
+	                paramcount="0" />   
+  <call-method-rule pattern="atmswitch/version" methodname="setVersion"
+	                paramcount="0" />   
+                
+   <call-method-rule pattern="atmswitch/SMTPServer" methodname="setSMTPServer"
+	                paramcount="0" /> 
+   <call-method-rule pattern="atmswitch/SMTPPort" methodname="setSMTPPort"
+	                paramcount="0" />	                
+
+   <call-method-rule pattern="atmswitch/SMTPUser" methodname="setSMTPUserName"
+	                paramcount="0" />	                
+   <call-method-rule pattern="atmswitch/SMTPPassword" methodname="setSMTPPassword"
+   	                paramcount="0" />	                
+   <call-method-rule pattern="atmswitch/SMTPFrom" methodname="setSMTPFrom"
+   	                paramcount="0" />	                
+   <call-method-rule pattern="atmswitch/SMTPTo" methodname="setSMTPTo"
+	                paramcount="0" />	                
+   <call-method-rule pattern="atmswitch/MailSubject" methodname="setMailSubject"
+	                paramcount="0" />	                
+   <call-method-rule pattern="atmswitch/MailBody" methodname="setMailBody"
+	                paramcount="0" />	                
+   <call-method-rule pattern="atmswitch/MailSign" methodname="setMailSign"
+	                paramcount="0" />	                
+
+   <call-method-rule pattern="atmswitch/DBPoolName" methodname="setDBPoolName"
+	                paramcount="0" />
+	                
+   <call-method-rule pattern="atmswitch/JDBCDriver" methodname="setJDBCDriver"
+	                paramcount="0" />
+	                
+   <call-method-rule pattern="atmswitch/JDBCURL" methodname="setJDBCURL"
+	                paramcount="0" />	                
+   <call-method-rule pattern="atmswitch/DBUserID" methodname="setDBUserID"
+	                paramcount="0" />	                
+   <call-method-rule pattern="atmswitch/DBPassword" methodname="setDBPassword"
+	                paramcount="0" />	                
+   <call-method-rule pattern="atmswitch/DBInitSize" methodname="setDBInitSize"
+	                paramcount="0" />	                
+   <call-method-rule pattern="atmswitch/DBMaxActive" methodname="setDBMaxActive"
+	                paramcount="0" />
+   <call-method-rule pattern="atmswitch/DBMaxWait" methodname="setDBMaxWait"
+	                paramcount="0" />
+	                	                
+   <call-method-rule pattern="atmswitch/JDBCURLCB" methodname="setJDBCURLCB"
+	                paramcount="0" />	                
+   <call-method-rule pattern="atmswitch/DBUserIDCB" methodname="setDBUserIDCB"
+	                paramcount="0" />	                
+   <call-method-rule pattern="atmswitch/DBPasswordCB" methodname="setDBPasswordCB"
+	                paramcount="0" />	                
+   <call-method-rule pattern="atmswitch/DBInitSizeCB" methodname="setDBInitSizeCB"
+	                paramcount="0" />	                
+   <call-method-rule pattern="atmswitch/DBMaxActiveCB" methodname="setDBMaxActiveCB"
+	                paramcount="0" />
+   <call-method-rule pattern="atmswitch/DBMaxWaitCB" methodname="setDBMaxWaitCB"
+	                paramcount="0" />
+
+   <call-method-rule pattern="atmswitch/AdminPort" methodname="setAdminPort"
+	                paramcount="0" />	                
+   <call-method-rule pattern="atmswitch/SocketTimeout" methodname="setSocketTimeout"
+	                paramcount="0" />	                
+   <call-method-rule pattern="atmswitch/WorkerThreads" methodname="setWorkerPoolThreads"
+	                paramcount="0" />	                
+   <call-method-rule pattern="atmswitch/Debug" methodname="setDebug"
+	                paramcount="0" />	                
+   <call-method-rule pattern="atmswitch/DebugFile" methodname="setDebugFile"
+	                paramcount="0" />	                
+   <call-method-rule pattern="atmswitch/DebugMsgDumpFile" methodname="setDebugDumpFile"
+	                paramcount="0" />
+
+   <call-method-rule pattern="atmswitch/ISOConfig" methodname="setISOConfig"
+	                paramcount="0" />
+   <call-method-rule pattern="atmswitch/ISOIssuerConfig" methodname="setISOIssuerConfig"
+	                paramcount="0" />	                
+   <call-method-rule pattern="atmswitch/MultiSocket" methodname="setMultipleSocket"
+	                paramcount="0" />	
+
+   <call-method-rule pattern="atmswitch/HSMIP" methodname="setHSMIP"
+	                paramcount="0" />
+   <call-method-rule pattern="atmswitch/HSMPort" methodname="setHSMPort"
+	                paramcount="0" />
+   <call-method-rule pattern="atmswitch/IssuerIP" methodname="setIssuerIP"
+	                paramcount="0" />
+   <call-method-rule pattern="atmswitch/IssuerPort" methodname="setIssuerPort"
+	                paramcount="0" />	                
+   <call-method-rule pattern="atmswitch/CUPKeyIndex" methodname="setCUPKeyIndex"
+	                paramcount="0" />	                
+
+   <call-method-rule pattern="atmswitch/CUPTransKeyIndex" methodname="setCUPTransKeyIndex"
+	                paramcount="0" />
+</digester-rules>

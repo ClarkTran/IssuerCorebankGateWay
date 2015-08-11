@@ -1,0 +1,133 @@
+/*
+ * This file is part of the QuickServer library
+ * Copyright (C) 2003-2004 QuickServer.org
+ *
+ * Use, modification, copying and distribution of this software is subject to
+ * the terms and conditions of the GNU Lesser General Public License.
+ * You should have received a copy of the GNU LGP License along with this
+ * library; if not, you can download a copy from <http://www.quickserver.org/>.
+ *
+ * For questions, suggestions, bug-reports, enhancement-requests etc.
+ * visit http://www.quickserver.org
+ *
+ */
+
+package com.transinfo.tplus;
+
+import com.transinfo.tplus.debug.*;
+
+import org.jpos.iso.*;
+
+public class ClientData{
+
+	public StringBuffer strISODump = new StringBuffer();
+
+	//private StringBuffer strISODump = new StringBuffer();
+
+
+	public void addISOPart(String data) {
+
+		if(data!=null && !data.equals(""))
+		strISODump.append(data);
+
+		if (DebugWriter.boolDebugEnabled) DebugWriter.write("ClientData:addISOPart"+strISODump.length());
+	}
+
+	public synchronized String getNextISO(int intmsg)throws TPlusException
+	{
+
+		String nextISO=null;
+		if (DebugWriter.boolDebugEnabled) DebugWriter.write("ClientData:getNextISO "+strISODump.length());
+		if(strISODump.length() > 2)
+		{
+			 String strlen = strISODump.substring(0,2);
+
+			 //System.out.println("MsgLen="+ISOUtil.hexString(strlen.getBytes()));
+			 if (DebugWriter.boolDebugEnabled) DebugWriter.write("ClientData:MsgLen="+ISOUtil.hexString(strlen.getBytes()));
+
+			 int intLen =0;
+
+			 if(TPlusConfig.isNumeric(ISOUtil.hexString(strlen.getBytes())))
+			 {
+				intLen = Integer.parseInt(ISOUtil.hexString(strlen.getBytes()));
+				//System.out.println("DumpLen="+strISODump.length()+"  "+"intLen="+intLen);
+
+				if(strISODump.length() < intLen)
+				{
+
+					intLen = java.lang.Integer.parseInt(ISOUtil.hexString(strlen.getBytes()), 16);
+				}
+
+			}
+			else
+			{
+				intLen = java.lang.Integer.parseInt(ISOUtil.hexString(strlen.getBytes()), 16);
+			}
+
+			//System.out.println("IN IF STATEMENT");
+
+			if (DebugWriter.boolDebugEnabled) DebugWriter.write("ClientData:DumpLen="+strISODump.length()+"  "+"intLen="+intLen);
+			if(strISODump.length() >= intLen)
+			{
+				nextISO = strISODump.substring(2,intLen+2);
+				strISODump.replace(0,intLen+2, "");
+				if (DebugWriter.boolDebugEnabled) DebugWriter.write("ClientData: Remining Size Data="+strISODump.length()+"    "+ISOUtil.hexString(new String(strISODump).getBytes()));
+				return nextISO;
+			}
+
+			else
+			{
+
+				strISODump.setLength(0);
+				throw new TPlusException(TPlusCodes.INVALID_MSG_LEN,TPlusCodes.getErrorDesc(TPlusCodes.INVALID_MSG_LEN)+". Error:Header Length value is not numeric");
+			}
+	 	}
+
+	 	return nextISO;
+	 }
+
+
+	 public static void main(String s[])
+	 {
+
+
+		/* byte[] b = ISOUtil.hex2byte("0205600000000002003020078020C00204000000000000000100A0100100520001000000374541822001564124D060120101234226100000303030303030313130303030303030303030303030313101185F2A02070282025C008407A00000000310109A030401269C01009F02060000000001009F03060000000000009F0902008C9F1A0207029F2608BB67B3EF39BAA0CE9F2701809F3303E020C89F3501229F3602001B9F3704BB5D5F445F3401019F34031E03009F100706990A03A0A1009505");
+		 ClientData cdata = new ClientData();
+		try
+		 {
+
+		 cdata.addISOPart(new String(b));
+		 String str=cdata.getNextISO();
+		 //System.out.println(str == null ? 0 : str.length());
+		 //System.out.println(cdata.strISODump.length());
+		 cdata.dumpString(str);
+		 //System.out.println("***************************");
+		 b = ISOUtil.hex2byte("400000800000063030303030320205600000000002003020078020C002");
+		 cdata.addISOPart(new String(b));
+		 str=cdata.getNextISO();
+		 //System.out.println(str == null ? 0 : str.length());
+		 //System.out.println(cdata.strISODump.length());
+		 cdata.dumpString(str);
+		 //System.out.println("***************************");
+		 b = ISOUtil.hex2byte("04000000000000000100A0100100520001000000374541822001564124D060120101234226100000303030303030313130303030303030303030303030313101185F2A02070282025C008407A00000000310109A030401269C01009F02060000000001009F03060000000000009F0902008C9F1A0207029F2608BB67B3EF39BAA0CE9F2701809F3303E020C89F3501229F3602001B9F3704BB5D5F445F3401019F34031E03009F100706990A03A0A100950540000080000006303030303032");
+		 cdata.addISOPart(new String(b));
+		 str=cdata.getNextISO();
+		 //System.out.println(str == null ? 0 : str.length());
+		 //System.out.println(cdata.strISODump.length());
+		 cdata.dumpString(str);
+		 //System.out.println("3");
+
+	    }
+	    catch(Exception e){//System.out.println(e);}*/
+ 	}
+
+ 	public void dumpString(String str)
+ 	{
+		try{
+			 if(str!=null)
+			//System.out.println(ISOUtil.hexString(str.getBytes()));
+	  }catch(Exception e){//System.out.println(e);}
+   }
+}
+
+
