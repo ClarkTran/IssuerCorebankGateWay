@@ -20,17 +20,17 @@ import com.transinfo.tplus.messaging.validator.Validator;
 import com.transinfo.tplus.util.DateUtil;
 
 @SuppressWarnings("static-access")
-public class ReversalRequest extends RequestBaseHandler {
+public class TransferReversalRequest extends RequestBaseHandler {
 
-	public ReversalRequest() {
+	public TransferReversalRequest() {
 	}
 
 	public IParser execute(IParser objISO) throws TPlusException {
 		TransactionDataBean objTranxBean=null;
 
 		if (DebugWriter.boolDebugEnabled)
-			DebugWriter.write("Reversal Start Processing :");
-		System.out.println("Reversal Start Processing :");
+			DebugWriter.write("Transfer Reversal Start Processing :");
+		System.out.println("Transfer Reversal Start Processing :");
 
 		boolean isDeleteRec = true;
 
@@ -43,10 +43,8 @@ public class ReversalRequest extends RequestBaseHandler {
 			objISO.setCloneISO(cloneISO);
 
 			objTranxBean = objISO.getTransactionDataBean();
-			//objTransactionDB.checkOffusTransaction(objISO);
-
 			// assign transaction code sub type
-			objTranxBean.setTranxCodeSubType("REVERSAL");
+			objTranxBean.setTranxCodeSubType("TRANSFER_R");
 
 
 			try {
@@ -59,16 +57,20 @@ public class ReversalRequest extends RequestBaseHandler {
 				
 				objTranxBean.setTraceNo2(objISO.getValue(11));
 				
-				// here call the CB Reversal
+				// here call the CB Transfer Reversal
 				CoreBankReqResBean objBankReqResBean = new CoreBankReqResBean();
 				objBankReqResBean.setSourceId(objISO.getValue(41));
+				objBankReqResBean.setAcqId(objISO.getValue(90).substring(20, 31));
+				objBankReqResBean.setCurrCode("2");
 				objBankReqResBean.setAcctNo(objISO.getValue(102));
 				objBankReqResBean.setTraceNo(objISO.getValue(90).substring(4,10));
 				objBankReqResBean.setAmt(Double.valueOf(objISO.getValue(4))/100);
-				objBankReqResBean.setDateTime(objISO.getValue(90).substring(10,20));
+				objBankReqResBean.setDateTime(objISO.getValue(90).substring(10, 20));
+				objBankReqResBean.setTranxFee(0);
+				objBankReqResBean.setToAcctNo(objISO.getValue(103));
 
-				System.out.println("Calling Store procedure ATM_CASH_WD_REVRSAL..");
-				objBankReqResBean = objTransactionDB.getCBReqResFromRevsal(objBankReqResBean);
+				System.out.println("Calling Store procedure ATM_POS_FT_REV..");
+				objBankReqResBean = objTransactionDB.getCBReqResFromFTRevsal(objBankReqResBean);
 
 				if(objBankReqResBean.getResCode() != null && !"".equals(objBankReqResBean.getResCode())){
 
@@ -84,6 +86,15 @@ public class ReversalRequest extends RequestBaseHandler {
 
 						objISO.setValue(38, approvalCode);
 						objISO.setValue(39, resCode);
+
+						if("JC".equals(objISO.getCardProduct())){
+							
+							String reqF39 = objISO.getValue(39);
+							
+							// over write
+							objTranxBean.setRemarks("Tranx Approved_Req F39 " + reqF39);
+							
+						}
 						
 						WriteLogDB objWriteLogDb = new WriteLogDB();
 						objWriteLogDb.updateLog(objISO.getTransactionDataBean());

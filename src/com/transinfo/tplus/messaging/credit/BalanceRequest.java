@@ -184,7 +184,6 @@ public class BalanceRequest extends RequestBaseHandler {
 			try {
 				// insert new trace no
 				objTranxBean.setTraceNo2(objISO.getValue(11));
-				objTranxBean.setTranx_datetime(objISO.getValue(7));
 				
 				// here call the CB BALANCE_ENQUIRY
 				TransactionDB objTransactionDB = new TransactionDB();

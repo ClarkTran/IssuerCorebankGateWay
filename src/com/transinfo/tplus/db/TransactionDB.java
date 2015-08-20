@@ -1154,7 +1154,7 @@ public class TransactionDB
 
 			sbfDTDVal.append(" AND CARDNUMBER='" + strCardno + "' ");
 
-			sbfDTDVal.append(" AND DELETED = 'N' AND RESPONSECODE = '00' AND TRANXCODE <> 'REVERSAL'");
+			sbfDTDVal.append(" AND DELETED = 'N' AND RESPONSECODE = '00' AND (TRANXCODE <> 'REVERSAL' OR TRANXCODE <> 'TRANSFER_R')");
 
 			sbfDTDVal.append(" AND TERMINALID='" + strTID + "'");
 
@@ -1167,7 +1167,6 @@ public class TransactionDB
 			{
 				objTranxInfo = new TranxInfo();
 				objTranxInfo.setTraceNo(objRs.getString("TRACENO"));
-				objTranxInfo.setTranx_dateTime(objRs.getString("TRANX_DATETIME"));
 			}
 
 		}catch(Exception vep)
@@ -7301,6 +7300,7 @@ System.out.println(strQuery.toString());
 			return objBankReqResBean;
 		}
 		
+		//Balance
 		public CoreBankReqResBean getCBReqResFromBalanceEnquiry(CoreBankReqResBean objBankReqResBean) throws Exception{
 
 			DBManagerCB objDbManager = new DBManagerCB();
@@ -7330,6 +7330,184 @@ System.out.println(strQuery.toString());
 				objBankReqResBean.setAppCode(callableStatement.getString(2));
 				objBankReqResBean.setBalance(callableStatement.getString(3));
 				objBankReqResBean.setResCode(callableStatement.getString(4));
+
+
+			}catch (Exception e) {
+				throw e;
+			}finally{
+
+				if(callableStatement!=null){
+					callableStatement.close();
+					callableStatement=null;
+				}
+
+				if(con!=null){
+					objDbManager.closeConnection(con);
+					con=null;
+				}
+			}
+
+			return objBankReqResBean;
+		}
+		
+		//FundTransfer
+		public CoreBankReqResBean getCBReqResFromFundTransfer(CoreBankReqResBean objBankReqResBean) throws Exception{
+
+			DBManagerCB objDbManager = new DBManagerCB();
+
+			Connection con=null;
+			CallableStatement callableStatement=null;
+
+			try{
+
+				if(con==null){
+					con=objDbManager.getConnection();
+				}
+
+				String cbReqRes = "{call ATM_POS_FUNDTRANSFER(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)}";
+
+				callableStatement = con.prepareCall(cbReqRes);
+
+				callableStatement.setString(1, objBankReqResBean.getAcctNo());
+				callableStatement.setDouble(2, Double.valueOf(objBankReqResBean.getAmt()));
+				callableStatement.setDouble(3, Double.valueOf(objBankReqResBean.getTranxFee()));
+				callableStatement.setString(4, objBankReqResBean.getToAcctNo());
+				callableStatement.setLong(5, Long.valueOf(objBankReqResBean.getSourceId()));
+				callableStatement.setString(6, objBankReqResBean.getAtmpos());
+				callableStatement.setLong(7, Long.valueOf(objBankReqResBean.getAcqId()));
+				callableStatement.setLong(8, Long.valueOf(objBankReqResBean.getCurrCode()));
+				callableStatement.setLong(9, Long.valueOf(objBankReqResBean.getTraceNo()));
+				callableStatement.setString(10, objBankReqResBean.getDateTime());
+
+				callableStatement.registerOutParameter(11, OracleTypes.DOUBLE);
+				callableStatement.registerOutParameter(12, OracleTypes.DOUBLE);
+				callableStatement.registerOutParameter(13, OracleTypes.VARCHAR);
+				callableStatement.registerOutParameter(14, OracleTypes.DOUBLE);
+				callableStatement.registerOutParameter(15, OracleTypes.VARCHAR);
+				callableStatement.registerOutParameter(16, OracleTypes.DOUBLE);
+				callableStatement.registerOutParameter(17, OracleTypes.DOUBLE);
+				callableStatement.registerOutParameter(18, OracleTypes.VARCHAR);
+				callableStatement.registerOutParameter(19, OracleTypes.DOUBLE);
+				// execute CardLimitUsed store procedure
+				callableStatement.execute();
+
+				objBankReqResBean.setAppCode(callableStatement.getString(12));
+				objBankReqResBean.setResCode(callableStatement.getString(13));
+
+
+			}catch (Exception e) {
+				throw e;
+			}finally{
+
+				if(callableStatement!=null){
+					callableStatement.close();
+					callableStatement=null;
+				}
+
+				if(con!=null){
+					objDbManager.closeConnection(con);
+					con=null;
+				}
+			}
+
+			return objBankReqResBean;
+		}
+
+
+		public CoreBankReqResBean getCBReqResFromMiniStatement(
+				CoreBankReqResBean objBankReqResBean) throws Exception {
+			DBManagerCB objDbManager = new DBManagerCB();
+
+			Connection con=null;
+			CallableStatement callableStatement=null;
+
+			try{
+
+				if(con==null){
+					con=objDbManager.getConnection();
+				}
+
+				String cbReqRes = "{call MINI_STATEMENT(?,?,?,?,?,?,?,?,?)}";
+
+				callableStatement = con.prepareCall(cbReqRes);
+
+				callableStatement.setString(1, objBankReqResBean.getAcctNo());
+				callableStatement.setLong(2, Long.valueOf(objBankReqResBean.getSourceId()));
+				callableStatement.setLong(3, Long.valueOf(objBankReqResBean.getTraceNo()));
+
+				callableStatement.registerOutParameter(4, OracleTypes.DOUBLE);
+				callableStatement.registerOutParameter(5, OracleTypes.VARCHAR);
+				callableStatement.registerOutParameter(6, OracleTypes.DOUBLE);
+				callableStatement.registerOutParameter(7, OracleTypes.DOUBLE);
+				callableStatement.registerOutParameter(8, OracleTypes.VARCHAR);
+				callableStatement.registerOutParameter(9, OracleTypes.VARCHAR);
+				// execute CardLimitUsed store procedure
+				callableStatement.execute();
+
+				objBankReqResBean.setAppCode(callableStatement.getString(4));
+				objBankReqResBean.setResCode(callableStatement.getString(5));
+
+
+			}catch (Exception e) {
+				throw e;
+			}finally{
+
+				if(callableStatement!=null){
+					callableStatement.close();
+					callableStatement=null;
+				}
+
+				if(con!=null){
+					objDbManager.closeConnection(con);
+					con=null;
+				}
+			}
+
+			return objBankReqResBean;
+		}
+
+
+		public CoreBankReqResBean getCBReqResFromFTRevsal(
+				CoreBankReqResBean objBankReqResBean) throws Exception {
+			DBManagerCB objDbManager = new DBManagerCB();
+
+			Connection con=null;
+			CallableStatement callableStatement=null;
+
+			try{
+
+				if(con==null){
+					con=objDbManager.getConnection();
+				}
+
+				String cbReqRes = "{call ATM_POS_FT_REV(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)}";
+
+				callableStatement = con.prepareCall(cbReqRes);
+
+				callableStatement.setString(1, objBankReqResBean.getAcctNo());
+				callableStatement.setDouble(2, Double.valueOf(objBankReqResBean.getAmt()));
+				callableStatement.setDouble(3, Double.valueOf(objBankReqResBean.getTranxFee()));
+				callableStatement.setString(4, objBankReqResBean.getToAcctNo());
+				callableStatement.setLong(5, Long.valueOf(objBankReqResBean.getSourceId()));
+				callableStatement.setLong(6, Long.valueOf(objBankReqResBean.getAcqId()));
+				callableStatement.setLong(7, Long.valueOf(objBankReqResBean.getCurrCode()));
+				callableStatement.setLong(8, Long.valueOf(objBankReqResBean.getTraceNo()));
+				callableStatement.setString(9, objBankReqResBean.getDateTime());
+
+				callableStatement.registerOutParameter(10, OracleTypes.DOUBLE);
+				callableStatement.registerOutParameter(11, OracleTypes.DOUBLE);
+				callableStatement.registerOutParameter(12, OracleTypes.VARCHAR);
+				callableStatement.registerOutParameter(13, OracleTypes.DOUBLE);
+				callableStatement.registerOutParameter(14, OracleTypes.VARCHAR);
+				callableStatement.registerOutParameter(15, OracleTypes.DOUBLE);
+				callableStatement.registerOutParameter(16, OracleTypes.DOUBLE);
+				callableStatement.registerOutParameter(17, OracleTypes.VARCHAR);
+				callableStatement.registerOutParameter(18, OracleTypes.DOUBLE);
+				// execute CardLimitUsed store procedure
+				callableStatement.execute();
+
+				objBankReqResBean.setAppCode(callableStatement.getString(11));
+				objBankReqResBean.setResCode(callableStatement.getString(12));
 
 
 			}catch (Exception e) {

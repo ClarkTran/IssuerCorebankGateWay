@@ -1,11 +1,16 @@
 package com.transinfo.tplus.messaging.credit;
 
+import java.io.PrintStream;
+
 import org.jpos.iso.ISOMsg;
 
 import com.transinfo.tplus.TPlusCodes;
 import com.transinfo.tplus.TPlusException;
+import com.transinfo.tplus.db.TransactionDB;
+import com.transinfo.tplus.db.WriteLogDB;
 import com.transinfo.tplus.debug.DebugWriter;
 import com.transinfo.tplus.javabean.CardInfo;
+import com.transinfo.tplus.javabean.CoreBankReqResBean;
 import com.transinfo.tplus.log.TransactionDataBean;
 import com.transinfo.tplus.messaging.OnlineException;
 import com.transinfo.tplus.messaging.RequestBaseHandler;
@@ -20,88 +25,92 @@ public class MiniStatementRequest extends RequestBaseHandler {
 	public MiniStatementRequest(){}
 
 	public IParser execute(IParser objISO)throws TPlusException {
-		boolean TranxValidation =true;
+		if (DebugWriter.boolDebugEnabled) DebugWriter.write("MiniStatementRequest: Start Processing.....");
 
-		if (DebugWriter.boolDebugEnabled) DebugWriter.write("MiniStatementRequest Start Processing :");
+		try
+		{
+			System.out.println("In Cash Request");
 
-		try {
 			ISOMsg cloneISO = objISO.clone();
 			objISO.setCloneISO(cloneISO);
-
-			/*if(!validateMessage(objISO)) {
-                return objISO;
-            }*/
-
-			System.out.println(" Card Validation is Successful");
-			// Sale transaction
+			cloneISO.dump(new PrintStream(System.out), "0");
 
 			try
 			{
 				objTranxBean = objISO.getTransactionDataBean();
 
+				// assign transaction code sub type
+				objTranxBean.setTranxCodeSubType("MINISTAT");
+
 			}
 			catch(OnlineException exp)
 			{
 				System.out.println("Exception=="+exp);
-				throw exp;
+				throw new OnlineException(exp);
 			}
 
-			objISO =  setProcessingCode(objISO);
-			//String currCode = getCurrencyCode(objISO);
-			CardInfo objCardInfo =objISO.getCardDataBean();
-			String savingsAccount = objCardInfo.getSavingAcct();
-			String checkingAccount = objCardInfo.getCheckingAcct();
-			DebugWriter.write("savingsAccount >> " + savingsAccount);
-			DebugWriter.write("checkingAccount >> " + checkingAccount);
-			int cLen = 0;
-			int sLen = 0;
-			if(objCardInfo.getSavingAcct() != null) sLen = savingsAccount.length();
-			if(objCardInfo.getCheckingAcct() != null) cLen = checkingAccount.length();
+			objTranxBean.setTraceNo2(objISO.getValue(11));
+			try{
 
-			if(objISO.getValue(3).equals("311000")) {
-				if(sLen > 0) objISO.setValue(102,savingsAccount);
-				else TranxValidation=false;
-			}
-			else if(objISO.getValue(3).equals("312000")) {
-				if(cLen > 0) objISO.setValue(102,checkingAccount);
-				else TranxValidation=false;
-			}
-			else {
-				TranxValidation=false;
+				// here call the CB MINISTATEMENT
+				TransactionDB objTransactionDB = new TransactionDB();
+
+				CoreBankReqResBean objBankReqResBean = new CoreBankReqResBean();
+				objBankReqResBean.setSourceId(objISO.getValue(41));
+				objBankReqResBean.setAcctNo(objISO.getValue(102));
+				objBankReqResBean.setTraceNo(objISO.getValue(11));
+				
+				System.out.println("Calling Store procedure MINI_STATEMENT..  ");
+				objBankReqResBean = objTransactionDB.getCBReqResFromMiniStatement(objBankReqResBean);
+
+				if(objBankReqResBean.getResCode() != null && !"".equals(objBankReqResBean.getResCode())){
+
+					String resCode = objBankReqResBean.getResCode();
+
+					if("00".equals(resCode)){
+
+						String approvalCode = objBankReqResBean.getAppCode();
+
+						objTranxBean.setResponseCode(resCode);
+						objTranxBean.setRemarks("Tranx Approved");
+						objTranxBean.setApprovalCode(approvalCode);
+
+						objISO.setValue(38, approvalCode);
+						objISO.setValue(39, resCode);
+
+						WriteLogDB objWriteLogDb = new WriteLogDB();
+						objWriteLogDb.updateLog(objISO.getTransactionDataBean());
+
+						if (DebugWriter.boolDebugEnabled) DebugWriter.write("Transaction Inserted....");
+						System.out.println("Transaction Inserted");
+
+					}else{
+						throw new TPlusException(resCode, "01", "Response Code From CB");
+					}				
+
+				}else{
+					throw new TPlusException(TPlusCodes.DO_NOT_HONOUR, "01", "Tranx Do NOT honour");
+				}
+
+			}catch(TPlusException tpexe){
+				System.out.println("TPlusException.....");
+				throw new OnlineException(tpexe.getErrorCode(), tpexe.getStrReasonCode(), tpexe.getMessage());
+			}catch(Exception ge){
+				System.out.println("exp");
+				ge.printStackTrace();
+				throw new OnlineException("96","G0001","System Error");
 			}
 
-			if(!TranxValidation){
-				objISO.setValue(TPlusISOCode.RESPONSE_CODE,TPlusCodes.DO_NOT_HONOUR);
-				return objISO;
-			}
-			objISO.setMTI("0100");
-			ISOMsg objRes = sendAndReceiveDestination(objISO);
-
-			if(objRes!=null) {
-				objISO.setMsgObject(cloneISO);
-				objISO.setValue(39,objRes.getString(39));
-				objISO.setValue(62,objRes.getString(62));
-				objISO.setValue(TPlusISOCode.APPROVAL_CODE,getApprovalCode());
-			}
-
-			System.out.println(" Response ="+ objRes.getString(39));
-		}
-		catch(OnlineException cex){
+		}catch(OnlineException cex){
 			System.out.println("exp online");
 			throw new OnlineException(cex);
+		}catch(Exception ge){
+			System.out.println("exp");
+			ge.printStackTrace();
+			throw new OnlineException("96","G0001","System Error");
 		}
-		catch(TPlusException tplusExp) {
-			System.out.println("Exception while execute MiniStatementRequest.."+tplusExp.getMessage());
-			objISO.setValue(TPlusISOCode.RESPONSE_CODE,tplusExp.getErrorCode());
-			throw tplusExp;
-
-		}catch(Exception exp) {
-			System.out.println("Exception while MiniStatementRequest.."+exp);
-			throw new TPlusException(TPlusCodes.APPL_ERR,TPlusCodes.getErrorDesc(TPlusCodes.APPL_ERR)+". Error: in MiniStatement TRANX:"+exp.getMessage());
-		}
-
+		System.out.println("*** Returning OBJISO ****");
 		return objISO;
-
 	}
 
 

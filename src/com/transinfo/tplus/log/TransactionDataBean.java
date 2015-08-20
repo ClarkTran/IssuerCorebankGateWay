@@ -105,7 +105,6 @@ implements java.io.Serializable
 
 	private String tranxCodeSubType="SALE";
 
-	private String tranx_datetime;
 	public TransactionDataBean ()
 	{	}
 
@@ -898,16 +897,4 @@ implements java.io.Serializable
 	public void setTranxCodeSubType(String tranxCodeSubType) {
 		this.tranxCodeSubType = tranxCodeSubType;
 	}
-
-	public String getTranx_datetime() {
-		return tranx_datetime;
-	}
-
-	public void setTranx_datetime(String tranx_datetime) {
-		this.tranx_datetime = tranx_datetime;
-	}
-
-	
-
-
 }

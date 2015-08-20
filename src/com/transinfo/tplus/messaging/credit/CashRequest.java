@@ -62,7 +62,6 @@ public class CashRequest extends RequestBaseHandler {
 			}
 
 			objTranxBean.setTraceNo2(objISO.getValue(11));
-			objTranxBean.setTranx_datetime(objISO.getValue(7));
 			try{
 
 				// here call the CB CASH withdrawal SP

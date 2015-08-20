@@ -17,6 +17,8 @@ public class CoreBankReqResBean implements Serializable {
 	private String appCode;
 	private String resCode;
 	private String balance;
+	private String toAcctNo;
+	private int tranxFee;
 	
 	public String getSourceId() {
 		return sourceId;
@@ -89,6 +91,18 @@ public class CoreBankReqResBean implements Serializable {
 	}
 	public void setBalance(String balance) {
 		this.balance = balance;
+	}
+	public String getToAcctNo() {
+		return toAcctNo;
+	}
+	public void setToAcctNo(String toAcctNo) {
+		this.toAcctNo = toAcctNo;
+	}
+	public int getTranxFee() {
+		return tranxFee;
+	}
+	public void setTranxFee(int tranxFee) {
+		this.tranxFee = tranxFee;
 	}
 	
 }

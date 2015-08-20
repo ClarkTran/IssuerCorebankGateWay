@@ -78,8 +78,8 @@ public class WriteLogDB implements java.io.Serializable
 
 			StringBuffer strQuery=new StringBuffer("INSERT INTO TRANXLOG("+
 					"TRANXLOGID,ISSUER_ID,DATETIME,TERMINALID, TRANXCODE,CARDNUMBER, AMOUNT, CURRCODE, TRACENO, MCC,"+
-					"REFNO,APPROVALCODE, RESPONSECODE,DELETED,ACQID, TRACENO2, TRANX_FEE,MTI,F90,REMARKS,TRANX_DATETIME)"+
-			" VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
+					"REFNO,APPROVALCODE, RESPONSECODE,DELETED,ACQID, TRACENO2, TRANX_FEE,MTI,F90,REMARKS)"+
+			" VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
 			
 			System.out.println("SQL="+strQuery.toString());
 
@@ -169,9 +169,6 @@ public class WriteLogDB implements java.io.Serializable
 			
 			objPrepStatement.setString(20,isNull(objTransDataBean.getRemarks()));
 			System.out.println("20 - Remarks :  "+objTransDataBean.getRemarks());
-			
-			objPrepStatement.setString(21,isNull(objTransDataBean.getTranx_datetime()));
-			System.out.println("21 - Tranx_datetime :  "+objTransDataBean.getTranx_datetime());
 			
 			objPrepStatement.executeUpdate();
 

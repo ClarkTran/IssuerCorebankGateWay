@@ -8,6 +8,7 @@ import com.transinfo.tplus.db.TransactionDB;
 import com.transinfo.tplus.db.WriteLogDB;
 import com.transinfo.tplus.debug.DebugWriter;
 import com.transinfo.tplus.javabean.CardInfo;
+import com.transinfo.tplus.javabean.CoreBankReqResBean;
 import com.transinfo.tplus.log.TransactionDataBean;
 import com.transinfo.tplus.messaging.OnlineException;
 import com.transinfo.tplus.messaging.RequestBaseHandler;
@@ -38,122 +39,71 @@ public class TransferRequest extends RequestBaseHandler {
 			try
 			{
 				objTranxBean = objISO.getTransactionDataBean();
-		    	
+				// assign transaction code sub type
+		    	objTranxBean.setTranxCodeSubType("TRANSFER");
 			}
 			catch(OnlineException exp)
 			{
 				System.out.println("Exception=="+exp);
 				throw exp;
 			}
+			
+			objTranxBean.setTraceNo2(objISO.getValue(11));
+			
+			try{
+				// here call the CB FUND TRANSFER
+				TransactionDB objTransactionDB = new TransactionDB();
 
-            System.out.println(" Card Validation is Successful");
-            // Sale transaction
+				CoreBankReqResBean objBankReqResBean = new CoreBankReqResBean();
+				objBankReqResBean.setSourceId(objISO.getValue(41));
+				objBankReqResBean.setAtmpos(objISO.getValue(18).equals("6011")?"Y":"N");
+				objBankReqResBean.setAcqId(objISO.getValue(32));
+				objBankReqResBean.setCurrCode("2");
+				objBankReqResBean.setAcctNo(objISO.getValue(102));
+				objBankReqResBean.setTraceNo(objISO.getValue(11));
+				objBankReqResBean.setAmt(Double.valueOf(objISO.getValue(4))/100);
+				objBankReqResBean.setDateTime(objISO.getValue(7));
+				objBankReqResBean.setTranxFee(0);
+				objBankReqResBean.setToAcctNo(objISO.getValue(103));
+				
+				System.out.println("Calling Store procedure ATM_POS_FUNDTRANSFER..  ");
+				objBankReqResBean = objTransactionDB.getCBReqResFromFundTransfer(objBankReqResBean);
 
-			objCardInfo = objISO.getCardDataBean();
+				if(objBankReqResBean.getResCode() != null && !"".equals(objBankReqResBean.getResCode())){
 
-            String savingsAccount = objCardInfo.getSavingAcct();
-            String checkingAccount = objCardInfo.getCheckingAcct();
+					String resCode = objBankReqResBean.getResCode();
 
-            DebugWriter.write("savingsAccount >> " + savingsAccount);
-            DebugWriter.write("checkingAccount >> " + checkingAccount);
+					if("00".equals(resCode)){
 
+						String approvalCode = objBankReqResBean.getAppCode();
 
-            int cLen = 0;
-            int sLen = 0;
-            if(objCardInfo.getSavingAcct() != null) sLen = savingsAccount.length();
-            if(objCardInfo.getCheckingAcct() != null) cLen = checkingAccount.length();
+						objTranxBean.setResponseCode(resCode);
+						objTranxBean.setRemarks("Tranx Approved");
+						objTranxBean.setApprovalCode(approvalCode);
 
-            if(objISO.getValue(3).equals("400000") || objISO.getValue(3).equals("401020") || objISO.getValue(3).equals("402010")){
-				 if(savingsAccount ==null || savingsAccount.trim().equals(""))
-				{
-					throw new OnlineException("53","G0001","No Saving Account");
+						objISO.setValue(38, approvalCode);
+						objISO.setValue(39, resCode);
+
+						WriteLogDB objWriteLogDb = new WriteLogDB();
+						objWriteLogDb.updateLog(objISO.getTransactionDataBean());
+
+						if (DebugWriter.boolDebugEnabled) DebugWriter.write("Transaction Inserted....");
+						System.out.println("Transaction Inserted");
+
+					}else{
+						throw new TPlusException(resCode, "01", "Response Code From CB");
+					}				
+
+				}else{
+					throw new TPlusException(TPlusCodes.DO_NOT_HONOUR, "01", "Tranx Do NOT honour");
 				}
-
-				if(checkingAccount == null || checkingAccount.trim().equals(""))
-				{
-					throw new OnlineException("52","G0001","No Checking Account");
-				}
-                if(cLen > 0 && sLen > 0){
-                    if(objISO.getValue(3).equals("400000")) {
-                        objISO.setValue(102,savingsAccount);
-                        objISO.setValue(103,checkingAccount);
-                        objISO.setValue(3,"401020");
-                    }else if(objISO.getValue(3).equals("401020")) {
-                        objISO.setValue(102,savingsAccount);
-                        objISO.setValue(103,checkingAccount);
-                    }else if(objISO.getValue(3).equals("402010")) {
-                        objISO.setValue(102,checkingAccount);
-                        objISO.setValue(103,savingsAccount);
-                    }
-                }else{
-                    TranxValidation=false;
-                }
-            }else if(objISO.getValue(3).equals("401000")) {
-                if(sLen > 0) objISO.setValue(102,savingsAccount);
-                else TranxValidation=false;
-            }else if(objISO.getValue(3).equals("402000")) {
-                if(cLen > 0) objISO.setValue(102,checkingAccount);
-                else TranxValidation=false;
-            }else {
-                TranxValidation=false;
-            }
-
-
-            String accountOne = objISO.getValue(102);
-            String accountTwo = objISO.getValue(103);
-
-            if(accountOne.trim().equals(accountTwo.trim())){ //if both the accounts are same, reject
-                TranxValidation=false;
-            }
-
-            if(!TranxValidation)
-            {
-                objISO.setValue(TPlusISOCode.RESPONSE_CODE,TPlusCodes.DO_NOT_HONOUR);
-                return objISO;
-            }
-
-            ISOMsg objRes = sendAndReceiveDestination(objISO);
-            if(objRes!=null) {
-                objISO.setMsgObject(cloneISO);
-                objISO= updateResponse(objISO,objRes);
-                //objISO.setValue(39,objRes.getString(39));
-                //objISO.setValue(TPlusISOCode.ADDITIONAL_DATA,objRes.getString(TPlusISOCode.ADDITIONAL_DATA));
-
-
-				try
-				{
-					WriteLogDB objWriteLogDb = new WriteLogDB();
-					objWriteLogDb.updateLog(objISO.getTransactionDataBean());
-					if (DebugWriter.boolDebugEnabled) DebugWriter.write("Transaction Inserted....");
-					System.out.println("Transaction Inserted");
-					if(objISO.getValue(39).equals("00"))
-					{
-						objISO.getTransactionDataBean().setGLType("D");
-						objTranxDB.insertDebitGL(objISO.getTransactionDataBean());
-						System.out.println("Transaction Inserted into Debit GL");
-					}
-
-
-				}
-				catch(Exception e)
-				{
-					 e.printStackTrace();
-					 if (DebugWriter.boolDebugEnabled) DebugWriter.write("Error Inserting Transaction...");
-					 System.out.println("Error Inserting Transaction...");
-					 throw new OnlineException("96","G0001","System Error");
-				}
-
-
-                if(objISO.getValue(22) != null){ //--added by sai
-                    if(objISO.getValue(22).equals("021")) {
-                        System.out.println("unset");
-                        objISO.unset(54);
-                    }
-                }
-            }
-            else
-            {
-				return null;
+			}catch(TPlusException tpexe){
+				System.out.println("TPlusException.....");
+				throw new OnlineException(tpexe.getErrorCode(), tpexe.getStrReasonCode(), tpexe.getMessage());
+			}catch(Exception ge){
+				System.out.println("exp");
+				ge.printStackTrace();
+				throw new OnlineException("96","G0001","System Error");
 			}
         }
         catch(OnlineException cex) {
